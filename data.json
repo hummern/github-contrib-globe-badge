@@ -1,125 +1,69 @@
 {
-  "user": "turbolego",
-  "generatedAt": "2026-09-12T02:12:24.834Z",
-  "totalCommits": 159,
+  "user": "hummern",
+  "generatedAt": "2026-09-12T14:50:50.694Z",
+  "totalCommits": 295,
   "markers": [
     {
-      "owner": "Experis",
-      "commits": 11,
+      "owner": "turbolego",
+      "commits": 277,
       "location": [
-        61.1529386,
-        8.7876653
+        59.9685301,
+        10.4690248
       ],
       "repositories": [
         {
-          "name": ".github",
-          "url": "https://github.com/Experis/.github"
-        }
-      ]
-    },
-    {
-      "owner": "diegosouzapw",
-      "commits": 6,
-      "location": [
-        -23.5506507,
-        -46.6333824
-      ],
-      "repositories": [
-        {
-          "name": "OmniRoute",
-          "url": "https://github.com/diegosouzapw/OmniRoute"
-        }
-      ]
-    },
-    {
-      "owner": "TurboDevsAS",
-      "commits": 4,
-      "location": [
-        59.9133301,
-        10.7389701
-      ],
-      "repositories": [
-        {
-          "name": ".github",
-          "url": "https://github.com/TurboDevsAS/.github"
+          "name": "GuessTheSongYear",
+          "url": "https://github.com/turbolego/GuessTheSongYear"
         },
         {
-          "name": "BlissBrain_TimeCrisis_Prototype_SpillExpo",
-          "url": "https://github.com/TurboDevsAS/BlissBrain_TimeCrisis_Prototype_SpillExpo"
+          "name": "HololensAirplaneViewer",
+          "url": "https://github.com/turbolego/HololensAirplaneViewer"
         },
         {
-          "name": "EEGBliss",
-          "url": "https://github.com/TurboDevsAS/EEGBliss"
-        }
-      ]
-    },
-    {
-      "owner": "criger",
-      "commits": 4,
-      "location": [
-        61.1529386,
-        8.7876653
-      ],
-      "repositories": [
+          "name": "HololensGo",
+          "url": "https://github.com/turbolego/HololensGo"
+        },
         {
-          "name": "Agentic-Ground-Rules",
-          "url": "https://github.com/criger/Agentic-Ground-Rules"
-        }
-      ]
-    },
-    {
-      "owner": "tvibitnmkt",
-      "commits": 3,
-      "location": [
-        69.6516345,
-        18.9558585
-      ],
-      "repositories": [
+          "name": "HololensHermes",
+          "url": "https://github.com/turbolego/HololensHermes"
+        },
         {
-          "name": "WhaleGuruVR",
-          "url": "https://github.com/tvibitnmkt/WhaleGuruVR"
-        }
-      ]
-    },
-    {
-      "owner": "progrium",
-      "commits": 2,
-      "location": [
-        37.8044557,
-        -122.271356
-      ],
-      "repositories": [
+          "name": "HololensIKEA",
+          "url": "https://github.com/turbolego/HololensIKEA"
+        },
         {
-          "name": "authsite",
-          "url": "https://github.com/progrium/authsite"
-        }
-      ]
-    },
-    {
-      "owner": "qualweb",
-      "commits": 2,
-      "location": [
-        38.7077507,
-        -9.1365919
-      ],
-      "repositories": [
+          "name": "HololensSatelliteViewer",
+          "url": "https://github.com/turbolego/HololensSatelliteViewer"
+        },
         {
-          "name": "qualweb",
-          "url": "https://github.com/qualweb/qualweb"
+          "name": "RullUt",
+          "url": "https://github.com/turbolego/RullUt"
+        },
+        {
+          "name": "Tilgjengelighet-WMS-OpenLayers",
+          "url": "https://github.com/turbolego/Tilgjengelighet-WMS-OpenLayers"
+        },
+        {
+          "name": "iPad2Spotify",
+          "url": "https://github.com/turbolego/iPad2Spotify"
+        },
+        {
+          "name": "wcag-skill",
+          "url": "https://github.com/turbolego/wcag-skill"
         }
       ]
     },
     {
-      "owner": "RightNow-AI",
+      "owner": "Ikalus1988",
       "commits": 1,
       "location": [
-        31.1667049,
-        36.941628
+        39.9057136,
+        116.3912972
       ],
       "repositories": [
         {
-          "name": "openfang",
-          "url": "https://github.com/RightNow-AI/openfang"
+          "name": "MisakaNet",
+          "url": "https://github.com/Ikalus1988/MisakaNet"
         }
       ]
     }
