@@ -2,7 +2,7 @@
 
 A daily-updating GitHub contribution analytics badge showing where the owners of repositories you contribute to are located. Click the badge to open an **interactive Cobe globe** on GitHub Pages.
 
-[![My contributions badge](https://raw.githubusercontent.com/turbolego/github-contrib-globe-badge/main/badge.gif)](https://turbolego.github.io/github-contrib-globe-badge/)
+[![My contributions badge](https://raw.githubusercontent.com/hummern/github-contrib-globe-badge/main/badge.gif)](https://hummern.github.io/github-contrib-globe-badge/)
 
 This project builds on [shuding/cobe](https://github.com/shuding/cobe), the WebGL globe library that renders the interactive page — cobe was the source and inspiration for this badge, though this repository's code, workflow, and generated assets have since diverged into a standalone tool.
 
