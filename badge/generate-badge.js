@@ -83,16 +83,23 @@ class RateLimiter {
   }
 }
 
-// GitHub's commits search endpoint is capped at 30 requests/min regardless of
-// token, and that budget is shared by both listing the user's commits and
-// looking up which other repositories contain a given SHA — so every call to
-// it must go through the same limiter or the two use sites starve each other.
-const commitsSearchLimiter = new RateLimiter(25, 60_000);
+// Keep a shared conservative budget for GitHub Search API requests.
+// Commit search and pull-request search both use the Search API, so sharing
+// the limiter avoids exhausting the search budget when both are used.
+const githubSearchLimiter = new RateLimiter(25, 60_000);
 
 async function searchCommits(query) {
-  await commitsSearchLimiter.wait();
+  await githubSearchLimiter.wait();
   return fetchJSON(
     `https://api.github.com/search/commits?q=${query}&per_page=100`,
+    { ...githubHeaders(), Accept: 'application/vnd.github+json' },
+  );
+}
+
+async function searchPullRequests(query) {
+  await githubSearchLimiter.wait();
+  return fetchJSON(
+    `https://api.github.com/search/issues?q=${query}&per_page=100`,
     { ...githubHeaders(), Accept: 'application/vnd.github+json' },
   );
 }
@@ -151,6 +158,41 @@ async function fetchAllCommitItems(baseQuery, fromDate, toDate) {
     const pages = Math.min(10, Math.ceil(totalCount / 100));
     for (let page = 2; page <= pages; page += 1) {
       const data = await searchCommits(`${q}&page=${page}`);
+      items.push(...(data.items || []));
+    }
+  }
+  await fetchRange(fromDate, toDate);
+  return items;
+}
+
+// GitHub's search API refuses to paginate past 1000 results for a single
+// query. Split the merged-date range recursively when necessary so that
+// all merged pull requests can be collected.
+async function fetchAllPullRequestItems(baseQuery, fromDate, toDate) {
+  const items = [];
+  async function fetchRange(from, to) {
+    const q = encodeURIComponent(`${baseQuery} merged:${from}..${to}`);
+    const first = await searchPullRequests(`${q}&page=1`);
+    const totalCount = first.total_count || 0;
+    if (totalCount === 0) return;
+
+    if (totalCount > 1000 && from !== to) {
+      const mid = midpointDate(from, to);
+      await fetchRange(from, mid);
+      await fetchRange(addDays(mid, 1), to);
+      return;
+    }
+
+    items.push(...(first.items || []));
+    if (totalCount > 1000) {
+      console.warn(
+        `${totalCount} pull requests on ${from} exceed the search API's ` +
+        '1000-result cap; some may be missed.',
+      );
+    }
+    const pages = Math.min(10, Math.ceil(totalCount / 100));
+    for (let page = 2; page <= pages; page += 1) {
+      const data = await searchPullRequests(`${q}&page=${page}`);
       items.push(...(data.items || []));
     }
   }
@@ -240,7 +282,9 @@ async function getContributions(user, commitCache) {
 
   const counts = new Map();
   const seenShas = new Set();
-  let total = 0;
+  const seenPullRequests = new Set();
+  let totalCommits = 0;
+  let totalPullRequests = 0;
   const now = Date.now();
 
   // `-user:${user}` excludes repos the user owns directly at the query
@@ -267,15 +311,38 @@ async function getContributions(user, commitCache) {
 
     const owner = originRepo.split('/')[0];
     if (owner === user) continue;
-    if (!counts.has(owner)) counts.set(owner, { commits: 0, repositories: new Set() });
+    if (!counts.has(owner)) counts.set(owner, { commits: 0, pullRequests: 0, repositories: new Set() });
     const ownerStats = counts.get(owner);
     ownerStats.commits += 1;
     ownerStats.repositories.add(originRepo);
-    total += 1;
+    totalCommits += 1;
     console.log(`Commit ${sha.slice(0, 8)} attributed to ${originRepo}`);
   }
 
-  return { counts, total };
+  // Find pull requests authored by the user that were merged into main
+  // in public repositories not owned by the user.
+  // base:main deliberately means the literal main branch, rather than
+  // whatever the repository's default branch happens to be.
+  const pullRequestQuery = `author:${user} is:public -user:${user} is:merged base:main`;
+  const pullRequests = await fetchAllPullRequestItems(pullRequestQuery, sinceDate, untilDate);
+  for (const pullRequest of pullRequests) {
+    const fullName = pullRequest.repository?.full_name;
+    const number = pullRequest.number;
+    if (!fullName || !number) continue;
+    const pullRequestId = `${fullName}#${number}`;
+    if (seenPullRequests.has(pullRequestId)) continue;
+    seenPullRequests.add(pullRequestId);
+    const owner = fullName.split('/')[0];
+    if (owner.toLowerCase() === user.toLowerCase()) continue;
+    if (!counts.has(owner)) counts.set(owner, { commits: 0, pullRequests: 0, repositories: new Set() });
+    const ownerStats = counts.get(owner);
+    ownerStats.pullRequests += 1;
+    ownerStats.repositories.add(fullName);
+    totalPullRequests += 1;
+    console.log(`PR #${number} merged into main in ${fullName}`);
+  }
+
+  return { counts, totalCommits, totalPullRequests };
 }
 
 async function getOwnerLocation(owner) {
@@ -384,7 +451,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function renderFrame(ctx, centerLonDeg, landGrid, markers, total) {
+function renderFrame(ctx, centerLonDeg, landGrid, markers, totalCommits, totalPullRequests) {
   // Background
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, SIZE, SIZE);
@@ -435,7 +502,9 @@ function renderFrame(ctx, centerLonDeg, landGrid, markers, total) {
     const [x, y, z] = p;
     const opacity = Math.min(1, z * 2.5);
     if (opacity <= 0) continue;
-    const percentage = Math.round((marker.commits / total) * 100);
+    const activityCount = marker.commits + marker.pullRequests;
+    const totalActivities = totalCommits + totalPullRequests;
+    const percentage = totalActivities ? Math.round((activityCount / totalActivities) * 100) : 0;
 
     ctx.globalAlpha = opacity;
 
@@ -449,8 +518,8 @@ function renderFrame(ctx, centerLonDeg, landGrid, markers, total) {
     ctx.stroke();
 
     // Label box
-    const boxWidth = 98;
-    const boxHeight = 34;
+    const boxWidth = 118;
+    const boxHeight = 48;
     const boxX = Math.max(8, Math.min(SIZE - boxWidth - 8, x - boxWidth / 2));
     const boxY = Math.max(8, y - 48);
 
@@ -458,17 +527,15 @@ function renderFrame(ctx, centerLonDeg, landGrid, markers, total) {
     roundRect(ctx, boxX, boxY, boxWidth, boxHeight, 7);
     ctx.fill();
 
-    // Commit count
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 16px monospace';
+    ctx.font = 'bold 14px monospace';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
-    ctx.fillText(String(marker.commits), boxX + 10, boxY + boxHeight / 2);
-
-    // Percentage
+    ctx.fillText(`${marker.commits} commits`, boxX + 9, boxY + 16);
+    ctx.fillText(`${marker.pullRequests} PRs`, boxX + 9, boxY + 34);
     ctx.fillStyle = '#34d399';
-    ctx.font = '11px monospace';
-    ctx.fillText(`↑ ${percentage}%`, boxX + 57, boxY + boxHeight / 2 - 1);
+    ctx.font = '10px monospace';
+    ctx.fillText(`↑ ${percentage}%`, boxX + 77, boxY + 34);
 
     ctx.globalAlpha = 1;
   }
@@ -476,12 +543,12 @@ function renderFrame(ctx, centerLonDeg, landGrid, markers, total) {
 
 async function main() {
   const commitCache = loadCommitCache();
-  const { counts, total } = await getContributions(USER, commitCache);
+  const { counts, totalCommits, totalPullRequests } = await getContributions(USER, commitCache);
   // Persist right away so already-resolved commits are saved even if a
   // later step (geocoding, GIF rendering) fails on this run.
   fs.writeFileSync(COMMIT_CACHE_PATH, JSON.stringify(commitCache, null, 2));
   const rankedOwners = [...counts.entries()].sort((a, b) => b[1].commits - a[1].commits);
-  console.log(`Found ${total} commits across ${counts.size} owners`);
+  console.log(`Found ${totalCommits} commits and ${totalPullRequests} merged PRs across ${counts.size} owners`);
   // Walk the full ranking (not just the top 8) so an owner with no usable
   // location — e.g. a bot or org account — doesn't consume one of the 8
   // marker slots and hide a lower-ranked but geocodable contributor.
@@ -493,6 +560,7 @@ async function main() {
     if (location) markers.push({
       owner,
       commits: stats.commits,
+      pullRequests: stats.pullRequests,
       location,
       repositories: [...stats.repositories].sort().map((fullName) => ({
         name: fullName.split('/').slice(1).join('/'),
@@ -504,7 +572,8 @@ async function main() {
   fs.writeFileSync('data.json', JSON.stringify({
     user: USER,
     generatedAt: new Date().toISOString(),
-    totalCommits: total,
+    totalCommits,
+    totalPullRequests,
     markers,
   }, null, 2));
 
@@ -519,12 +588,12 @@ async function main() {
   encoder.start();
   for (let i = 0; i < FRAMES; i += 1) {
     const angle = (360 / FRAMES) * i;
-    renderFrame(ctx, angle, landGrid, markers, total || 1);
+    renderFrame(ctx, angle, landGrid, markers, totalCommits, totalPullRequests);
     encoder.addFrame(ctx);
   }
   encoder.finish();
   fs.writeFileSync('badge.gif', Buffer.from(encoder.out.getData()));
-  console.log(`✅ badge.gif written – ${markers.length} locations, ${total} commits, ${FRAMES} frames`);
+  console.log(`✅ badge.gif written – ${markers.length} locations, ${totalCommits} commits, ${totalPullRequests} merged PRs, ${FRAMES} frames`);
 }
 
 main().catch((error) => {
