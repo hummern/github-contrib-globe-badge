@@ -1,6 +1,6 @@
 {
   "user": "turbolego",
-  "generatedAt": "2026-09-20T12:39:11.513Z",
+  "generatedAt": "2026-09-20T13:16:23.808Z",
   "totalCommits": 160,
   "totalPullRequests": 26,
   "markers": [
@@ -22,7 +22,7 @@
     {
       "owner": "diegosouzapw",
       "commits": 7,
-      "pullRequests": 0,
+      "pullRequests": 7,
       "location": [
         -23.5506507,
         -46.6333824
@@ -90,7 +90,7 @@
     {
       "owner": "progrium",
       "commits": 2,
-      "pullRequests": 0,
+      "pullRequests": 1,
       "location": [
         37.8044557,
         -122.271356
@@ -105,7 +105,7 @@
     {
       "owner": "qualweb",
       "commits": 2,
-      "pullRequests": 0,
+      "pullRequests": 7,
       "location": [
         38.7077507,
         -9.1365919
@@ -120,7 +120,7 @@
     {
       "owner": "RightNow-AI",
       "commits": 1,
-      "pullRequests": 0,
+      "pullRequests": 1,
       "location": [
         31.1667049,
         36.941628
