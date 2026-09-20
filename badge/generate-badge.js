@@ -2,8 +2,8 @@ import fs from 'fs';
 import https from 'https';
 import { createCanvas } from 'canvas';
 import GIFEncoder from 'gif-encoder-2';
+import { execSync } from 'child_process';
 
-const USER = process.env.GITHUB_ACTOR;
 const SIZE = 520;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
@@ -11,6 +11,21 @@ const RADIUS = 238;
 const FRAMES = 120;
 const FRAME_DELAY = 50; // ms — 120 frames × 50ms = 6s per rotation (50% slower)
 const WORLD_GEOJSON_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
+
+function getRepositoryOwner() {
+  if (process.env.GITHUB_REPOSITORY) {
+    return process.env.GITHUB_REPOSITORY.split('/')[0];
+  }
+  try {
+    const remote = execSync('git remote get-url origin', { encoding: 'utf8' }).trim();
+    const match = remote.match(/github\.com(?::[0-9]+)?[:/]([^/]+)/);
+    if (match) return match[1].toLowerCase();
+  } catch (err) {}
+  if (process.env.GITHUB_ACTOR) return process.env.GITHUB_ACTOR;
+  throw new Error('Could not determine repository owner. Set GITHUB_ACTOR or ensure the script is run in a GitHub repo with remote origin.');
+}
+
+const USER = getRepositoryOwner();
 
 function fetchJSONOnce(url, headers = {}) {
   return new Promise((resolve, reject) => {
