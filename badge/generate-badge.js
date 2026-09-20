@@ -334,8 +334,10 @@ async function getContributions(user, commitCache) {
     const repoUrl = pullRequest.repository_url;
     let fullName = null;
     if (repoUrl) {
-      // Convert https://api.github.com/repos/ to empty string
-      fullName = repoUrl.replace("https://api.github.com/repos/");
+      const parts = repoUrl.split('/');
+      if (parts.length >= 2) {
+        fullName = parts.slice(4).join('/');
+      }
     }
     console.log("DEBUG: repoUrl=", repoUrl, "fullName=", fullName);
     const number = pullRequest.number;
