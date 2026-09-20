@@ -567,7 +567,7 @@ async function main() {
   // marker slots and hide a lower-ranked but geocodable contributor.
   const markers = [];
   for (const [owner, stats] of rankedOwners) {
-    if (markers.length >= 100) break;
+    if (markers.length >= 1000) break;
     const location = await getOwnerLocation(owner).then(geocode);
     console.log(`Located ${owner}: ${location ? location.join(', ') : 'unknown'}`);
     if (location) markers.push({
