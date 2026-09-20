@@ -323,10 +323,21 @@ async function getContributions(user, commitCache) {
   // in public repositories not owned by the user.
   // base:main deliberately means the literal main branch, rather than
   // whatever the repository's default branch happens to be.
-  const pullRequestQuery = `author:${user} is:public -user:${user} is:merged base:main`;
+  const pullRequestQuery = `author:${user} is:public -user:${user} is:merged`;
   const pullRequests = await fetchAllPullRequestItems(pullRequestQuery, sinceDate, untilDate);
+    console.log("Pull Request Query:", pullRequestQuery);
+    console.log("Fetched PR items length:", (pullRequests || []).length);
+    if (pullRequests && pullRequests.length > 0) {
+        console.log("First PR:", JSON.stringify(pullRequests[0], null, 2));
+    }
   for (const pullRequest of pullRequests) {
-    const fullName = pullRequest.repository?.full_name;
+    const repoUrl = pullRequest.repository_url;
+    let fullName = null;
+    if (repoUrl) {
+      // Convert https://api.github.com/repos/ to empty string
+      fullName = repoUrl.replace("https://api.github.com/repos/");
+    }
+    console.log("DEBUG: repoUrl=", repoUrl, "fullName=", fullName);
     const number = pullRequest.number;
     if (!fullName || !number) continue;
     const pullRequestId = `${fullName}#${number}`;
