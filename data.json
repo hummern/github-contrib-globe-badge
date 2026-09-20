@@ -1,11 +1,13 @@
 {
   "user": "turbolego",
-  "generatedAt": "2026-09-20T02:27:14.985Z",
+  "generatedAt": "2026-09-20T11:37:26.723Z",
   "totalCommits": 160,
+  "totalPullRequests": 0,
   "markers": [
     {
       "owner": "Experis",
       "commits": 11,
+      "pullRequests": 0,
       "location": [
         61.1529386,
         8.7876653
@@ -20,6 +22,7 @@
     {
       "owner": "diegosouzapw",
       "commits": 7,
+      "pullRequests": 0,
       "location": [
         -23.5506507,
         -46.6333824
@@ -34,6 +37,7 @@
     {
       "owner": "TurboDevsAS",
       "commits": 4,
+      "pullRequests": 0,
       "location": [
         59.9133301,
         10.7389701
@@ -56,6 +60,7 @@
     {
       "owner": "criger",
       "commits": 4,
+      "pullRequests": 0,
       "location": [
         61.1529386,
         8.7876653
@@ -70,6 +75,7 @@
     {
       "owner": "tvibitnmkt",
       "commits": 3,
+      "pullRequests": 0,
       "location": [
         69.6516345,
         18.9558585
@@ -84,6 +90,7 @@
     {
       "owner": "progrium",
       "commits": 2,
+      "pullRequests": 0,
       "location": [
         37.8044557,
         -122.271356
@@ -98,6 +105,7 @@
     {
       "owner": "qualweb",
       "commits": 2,
+      "pullRequests": 0,
       "location": [
         38.7077507,
         -9.1365919
@@ -112,6 +120,7 @@
     {
       "owner": "RightNow-AI",
       "commits": 1,
+      "pullRequests": 0,
       "location": [
         31.1667049,
         36.941628
