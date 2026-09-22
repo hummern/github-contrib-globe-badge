@@ -2,7 +2,7 @@
 
 A daily-updating GitHub contribution analytics badge showing where the owners of repositories you contribute to are located. Click the badge to open an **interactive Cobe globe** on GitHub Pages.
 
-[![My contributions badge](https://raw.githubusercontent.com/turbolego/github-contrib-globe-badge/main/badge.gif)](https://turbolego.github.io/github-contrib-globe-badge/)
+[![My contributions badge](https://raw.githubusercontent.com/hummern/github-contrib-globe-badge/main/badge.gif)](https://hummern.github.io/github-contrib-globe-badge/)
 
 This project builds on [shuding/cobe](https://github.com/shuding/cobe), the WebGL globe library that renders the interactive page — cobe was the source and inspiration for this badge, though this repository's code, workflow, and generated assets have since diverged into a standalone tool.
 
@@ -21,10 +21,10 @@ The animated GIF badge shows a rotating dotted world map with contribution-locat
 
 ## Adding the badge to a profile README
 
-Use the linked-image Markdown below. Replace `turbolego` with your GitHub username if you fork the repository:
+Use the linked-image Markdown below. Replace `hummern` with your GitHub username if you fork the repository:
 
 ```markdown
-[![My contributions badge](https://raw.githubusercontent.com/turbolego/github-contrib-globe-badge/main/badge.gif)](https://turbolego.github.io/github-contrib-globe-badge/)
+[![My contributions badge](https://raw.githubusercontent.com/hummern/github-contrib-globe-badge/main/badge.gif)](https://hummern.github.io/github-contrib-globe-badge/)
 ```
 
 The outer link opens the interactive GitHub Pages globe in a new browser tab when the profile visitor clicks the badge link.
@@ -48,12 +48,12 @@ The contribution date range is controlled by the `author-date:>2023-01-01` query
 
 ```bash
 npm install
-GITHUB_ACTOR=turbolego node badge/generate-badge.js
+GITHUB_ACTOR=hummern node badge/generate-badge.js
 ```
 
 The generator writes both `badge.gif` and `data.json`. GitHub Pages is configured to serve the repository's `main` branch root at:
 
-<https://turbolego.github.io/github-contrib-globe-badge/>
+<https://hummern.github.io/github-contrib-globe-badge/>
 
 ## Credits
 
