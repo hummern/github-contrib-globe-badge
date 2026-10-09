@@ -2,7 +2,7 @@
 
 A daily-updating GitHub contribution analytics badge showing where the owners of repositories you contribute to are located. Click the badge to open an **interactive Cobe globe** on GitHub Pages.
 
-[![My contributions badge](https://raw.githubusercontent.com/turbolego/github-contrib-globe-badge/main/badge.gif)](https://turbolego.github.io/github-contrib-globe-badge/)
+[![My contributions badge](https://raw.githubusercontent.com/hummern/github-contrib-globe-badge/main/badge.gif)](https://hummern.github.io/github-contrib-globe-badge/)
 
 This is a standalone project that uses [Cobe](https://github.com/shuding/cobe), an external WebGL globe library, to render its interactive page. It is not a fork of Cobe.
 
@@ -23,7 +23,7 @@ The animated GIF badge shows a rotating dotted world map with country markers, f
 
 Fork the repository, then the workflow will automatically use your GitHub username to generate the badge. No changes to the workflow are needed.
 
-Add the badge to your profile README using the linked-image Markdown below. Replace `turbolego` with your GitHub username:
+Add the badge to your profile README using the linked-image Markdown below. Replace `hummern` with your GitHub username:
 
 ```markdown
 [![My contributions badge](https://raw.githubusercontent.com/<YOUR_USERNAME>/github-contrib-globe-badge/main/badge.gif)](https://<YOUR_USERNAME>.github.io/github-contrib-globe-badge/)
@@ -58,7 +58,7 @@ The generator writes both `badge.gif` and `data.json`. In the GitHub Actions wor
 
 GitHub Pages is configured to serve the repository's `main` branch root at:
 
-<https://turbolego.github.io/github-contrib-globe-badge/>
+<https://hummern.github.io/github-contrib-globe-badge/>
 
 ## Credits
 
