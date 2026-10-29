@@ -2458,5 +2458,13 @@
   "7605199280978a4e1956f2c4de3ddc1197a89de4": {
     "origin": "turbolego/HololensSatelliteViewer",
     "resolvedAt": 1791553067598
+  },
+  "6da6f18ef66311d32ca3803755075a378bedbfb0": {
+    "origin": "cheaper-inference/OmniRoute",
+    "resolvedAt": 1793244486491
+  },
+  "7e537f94d085f671345c0ee96b928169b3a5d283": {
+    "origin": "cheaper-inference/OmniRoute",
+    "resolvedAt": 1793244486491
   }
 }
