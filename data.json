@@ -1,6 +1,6 @@
 {
   "user": "turbolego",
-  "generatedAt": "2026-11-05T04:19:25.168Z",
+  "generatedAt": "2026-11-06T04:17:04.573Z",
   "totalCommits": 189,
   "totalPullRequests": 31,
   "markers": [
@@ -131,6 +131,24 @@
       ]
     },
     {
+      "countryCode": "IN",
+      "location": [
+        19.3653598,
+        73.3685437
+      ],
+      "commits": 1,
+      "pullRequests": 1,
+      "owners": [
+        "ashkulz"
+      ],
+      "repositories": [
+        {
+          "name": "committers.top",
+          "url": "https://github.com/ashkulz/committers.top"
+        }
+      ]
+    },
+    {
       "countryCode": "JO",
       "location": [
         31.1667049,
@@ -163,24 +181,6 @@
         {
           "name": "fang-upgrade",
           "url": "https://github.com/kyzdes/fang-upgrade"
-        }
-      ]
-    },
-    {
-      "countryCode": "IN",
-      "location": [
-        19.3653598,
-        73.3685437
-      ],
-      "commits": 1,
-      "pullRequests": 1,
-      "owners": [
-        "ashkulz"
-      ],
-      "repositories": [
-        {
-          "name": "committers.top",
-          "url": "https://github.com/ashkulz/committers.top"
         }
       ]
     },
