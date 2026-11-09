@@ -14,6 +14,25 @@ export function createRedirectTransfer(previousObservation, currentOwner, observ
   };
 }
 
+export function selectPreviousOwnerObservation(latestObservation, cachedOwner, currentOwner) {
+  if (
+    latestObservation?.owner
+    && latestObservation.owner.toLowerCase() !== currentOwner.toLowerCase()
+  ) return latestObservation;
+
+  if (
+    cachedOwner?.owner
+    && cachedOwner.owner.toLowerCase() !== currentOwner.toLowerCase()
+  ) {
+    return {
+      ...cachedOwner,
+      observedAt: cachedOwner.observedAt || cachedOwner.commitDate || null,
+    };
+  }
+
+  return latestObservation || null;
+}
+
 export function legacyOwnerTransfers(entries, currentOwner, repository) {
   const sortedEntries = [...entries]
     .filter((entry) => entry?.owner && Number.isFinite(Date.parse(entry.through)))
@@ -49,6 +68,7 @@ export function getOwnerAtCommit(transfers, commitDate, currentOwner, fallbackOw
   let owner = events[0].fromOwner || fallbackOwner || currentOwner;
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
+    if (owner?.toLowerCase() === event.toOwner?.toLowerCase()) continue;
     if (committedAt < event.observedAt) {
       if (Number.isFinite(event.lowerBound) && committedAt <= event.lowerBound) return owner;
       return fallbackOwner;

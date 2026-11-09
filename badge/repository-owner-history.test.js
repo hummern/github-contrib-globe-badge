@@ -4,6 +4,7 @@ import {
   createRedirectTransfer,
   getOwnerAtCommit,
   legacyOwnerTransfers,
+  selectPreviousOwnerObservation,
 } from './repository-owner-history.js';
 
 test('creates a transfer observation from a redirect and its prior owner snapshot', () => {
@@ -92,6 +93,28 @@ test('handles multiple transfers recorded by consecutive observations', () => {
   );
 });
 
+test('does not re-open an interval for a redirect duplicating a cached transfer', () => {
+  const transfers = [
+    {
+      fromOwner: 'former-owner',
+      toOwner: 'current-owner',
+      notBefore: '2024-01-01T00:00:00Z',
+      observedAt: '2024-01-01T00:00:00.001Z',
+    },
+    {
+      fromOwner: 'former-owner',
+      toOwner: 'current-owner',
+      notBefore: '2023-12-31T00:00:00Z',
+      observedAt: '2024-01-03T00:00:00Z',
+    },
+  ];
+
+  assert.equal(
+    getOwnerAtCommit(transfers, '2024-01-02T00:00:00Z', 'current-owner'),
+    'current-owner',
+  );
+});
+
 test('converts legacy owner boundaries into point-in-time transfers', () => {
   const transfers = legacyOwnerTransfers([
     {
@@ -114,4 +137,23 @@ test('converts legacy owner boundaries into point-in-time transfers', () => {
     getOwnerAtCommit(transfers, '2025-01-01T00:00:00.001Z', 'current-owner'),
     'current-owner',
   );
+});
+
+test('uses cached owner data when no prior redirect observation is available', () => {
+  const cachedOwner = {
+    owner: 'former-owner',
+    commitDate: '2024-01-01T00:00:00Z',
+    origin: 'former-owner/project',
+  };
+  assert.deepEqual(selectPreviousOwnerObservation(null, cachedOwner, 'current-owner'), {
+    ...cachedOwner,
+    observedAt: cachedOwner.commitDate,
+  });
+  assert.deepEqual(selectPreviousOwnerObservation({
+    owner: 'current-owner',
+    observedAt: '2024-01-04T00:00:00Z',
+  }, cachedOwner, 'current-owner'), {
+    ...cachedOwner,
+    observedAt: cachedOwner.commitDate,
+  });
 });

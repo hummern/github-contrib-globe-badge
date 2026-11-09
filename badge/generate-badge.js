@@ -8,6 +8,7 @@ import {
   createRedirectTransfer,
   getOwnerAtCommit,
   legacyOwnerTransfers,
+  selectPreviousOwnerObservation,
 } from './repository-owner-history.js';
 
 const SIZE = 520;
@@ -395,11 +396,15 @@ async function getContributions(user, commitCache) {
         return (Number.isFinite(aDate) ? aDate : 0) - (Number.isFinite(bDate) ? bDate : 0);
       });
     const priorCachedOwner = cachedOwners.at(-1);
-    const previousObservation = latestObservation?.owner.toLowerCase() !== currentOwner.toLowerCase()
-      ? latestObservation
-      : priorCachedOwner
-        ? { owner: priorCachedOwner.owner, observedAt: null, fullName: priorCachedOwner.origin }
-        : latestObservation;
+      const previousObservation = selectPreviousOwnerObservation(
+        latestObservation,
+        priorCachedOwner && {
+          owner: priorCachedOwner.owner,
+          commitDate: priorCachedOwner.commitDate,
+          fullName: priorCachedOwner.origin,
+        },
+        currentOwner,
+      );
 
     const redirectObserved = observations.some((observation) => (
       observation.redirected
@@ -420,7 +425,15 @@ async function getContributions(user, commitCache) {
           && existing.toOwner?.toLowerCase() === event.toOwner.toLowerCase()
           && (!event.notBefore || existing.notBefore === event.notBefore)
         ));
-        if (!alreadyRecorded) events.push(event);
+        if (!alreadyRecorded) {
+          events.push(event);
+          console.log(
+            'Cached repository transfer observation: '
+            + event.fromOwner
+            + ' -> '
+            + event.toOwner,
+          );
+        }
       }
     }
 
