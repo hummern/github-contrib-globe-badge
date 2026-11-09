@@ -10,6 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Restore commit cache
+        uses: actions/cache/restore@v6
+        with:
+          path: commit-cache-${{ github.repository_owner }}.json
+          key: ${{ runner.os }}-commit-cache-v2-${{ github.repository_owner }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-commit-cache-v2-${{ github.repository_owner }}-
       - name: Install system dependencies for canvas
         run: |
           sudo apt-get update -y
@@ -24,7 +31,14 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.repository_owner }}
           GITHUB_TOKEN: ${{ github.token }}
+          AUDIT_LOG_TOKEN: ${{ secrets.AUDIT_LOG_TOKEN }}
         run: node badge/generate-badge.js
+      - name: Save commit cache
+        if: always() && hashFiles('commit-cache-${{ github.repository_owner }}.json') != ''
+        uses: actions/cache/save@v6
+        with:
+          path: commit-cache-${{ github.repository_owner }}.json
+          key: ${{ runner.os }}-commit-cache-v2-${{ github.repository_owner }}-${{ github.run_id }}
       - name: Replace turbolego with repository owner
         env:
           REPO_OWNER: ${{ github.repository_owner }}
