@@ -407,12 +407,12 @@ async function getContributions(user, commitCache) {
     ));
     const events = [...(cached.events || [])];
     const observedAt = new Date().toISOString();
-    if (redirectObserved && previousObservation?.owner.toLowerCase() !== currentOwner.toLowerCase()) {
+    if (redirectObserved) {
       const event = createRedirectTransfer(
         previousObservation,
         currentOwner,
         observedAt,
-        previousObservation.fullName || canonicalName,
+        previousObservation?.fullName || canonicalName,
       );
       if (event) {
         const alreadyRecorded = events.some((existing) => (

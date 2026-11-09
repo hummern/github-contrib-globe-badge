@@ -26,6 +26,7 @@ test('creates a transfer observation from a redirect and its prior owner snapsho
     '2024-01-03T00:00:00Z',
     'current-owner/project',
   ), null);
+  assert.equal(createRedirectTransfer(null, 'current-owner', '2024-01-03T00:00:00Z', 'project'), null);
 });
 
 test('attributes commits outside a redirect-observation window to the correct owner', () => {
