@@ -31,7 +31,6 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.repository_owner }}
           GITHUB_TOKEN: ${{ github.token }}
-          AUDIT_LOG_TOKEN: ${{ secrets.AUDIT_LOG_TOKEN }}
         run: node badge/generate-badge.js
       - name: Save commit cache
         if: always() && hashFiles('commit-cache-${{ github.repository_owner }}.json') != ''

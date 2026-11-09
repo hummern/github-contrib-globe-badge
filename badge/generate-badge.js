@@ -5,9 +5,9 @@ import GIFEncoder from 'gif-encoder-2';
 import { execSync } from 'child_process';
 import { groupMarkersByCountry } from './group-markers.js';
 import {
+  createRedirectTransfer,
   getOwnerAtCommit,
   legacyOwnerTransfers,
-  normalizeTransferEvent,
 } from './repository-owner-history.js';
 
 const SIZE = 520;
@@ -136,7 +136,6 @@ class RateLimiter {
 // Commit search and pull-request search both use the Search API, so sharing
 // the limiter avoids exhausting the search budget when both are used.
 const githubSearchLimiter = new RateLimiter(25, 60_000);
-const githubAuditLogLimiter = new RateLimiter(20, 60_000);
 
 async function searchCommits(query) {
   await githubSearchLimiter.wait();
@@ -156,7 +155,7 @@ async function searchPullRequests(query) {
 
 const COMMIT_CACHE_PATH = `commit-cache-${USER}.json`;
 const REPOSITORY_OWNER_HISTORY_CACHE_KEY = '_repositoryOwnerHistory';
-const REPOSITORY_TRANSFER_CACHE_KEY = '_repositoryTransfers';
+const REPOSITORY_TRANSFER_CACHE_KEY = '_repositoryRedirectHistory';
 
 // A cached commit->origin mapping is trusted for this long before being
 // re-resolved, since a repository that is private today (and thus invisible
@@ -164,7 +163,6 @@ const REPOSITORY_TRANSFER_CACHE_KEY = '_repositoryTransfers';
 // older origin of a commit we already attributed elsewhere. Owner attribution
 // is recomputed from the commit date and the repository's cached transfer log.
 const ORIGIN_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-const AUDIT_LOG_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function loadCommitCache() {
   try {
@@ -285,9 +283,8 @@ async function getContributions(user, commitCache) {
   // Failures are NOT cached, so a transient error can be retried on a later
   // reference to the same repo instead of permanently poisoning the result.
   const repoCache = new Map();
-  const ownerInfoCache = new Map();
   const transferLookupCache = new Map();
-  const auditWarnings = new Set();
+  const redirectWarnings = new Set();
   async function getRepositoryInfo(fullName) {
     if (repoCache.has(fullName)) return repoCache.get(fullName);
     const repo = await fetchJSON(`https://api.github.com/repos/${fullName}`, githubHeaders());
@@ -295,17 +292,9 @@ async function getContributions(user, commitCache) {
     return repo;
   }
 
-  async function getOwnerInfo(owner) {
-    const key = owner.toLowerCase();
-    if (ownerInfoCache.has(key)) return ownerInfoCache.get(key);
-    const info = await fetchJSON(`https://api.github.com/users/${encodeURIComponent(owner)}`, githubHeaders());
-    ownerInfoCache.set(key, info);
-    return info;
-  }
-
-  function warnAuditUnavailable(key, message) {
-    if (auditWarnings.has(key)) return;
-    auditWarnings.add(key);
+  function warnRedirectLookup(key, message) {
+    if (redirectWarnings.has(key)) return;
+    redirectWarnings.add(key);
     console.warn(message);
   }
 
@@ -327,72 +316,11 @@ async function getContributions(user, commitCache) {
     for (const entry of repositoryOwnerHistory[canonicalName.toLowerCase()] || []) {
       if (entry.repository) aliases.add(entry.repository);
     }
+    const cacheKey = String(repositoryId || canonicalName.toLowerCase());
+    for (const observation of Object.values(repositoryTransferCache[cacheKey]?.ownerObservations || {})) {
+      if (observation?.fullName) aliases.add(observation.fullName);
+    }
     return [...aliases];
-  }
-
-  async function fetchOrganizationTransferEvents(org, repositoryInfo, aliases) {
-    const events = [];
-    let complete = true;
-    const repositoryNames = new Set(aliases.map((name) => name.toLowerCase()));
-    const actions = ['repo.transfer_outgoing', 'repo.transfer'];
-    const auditToken = process.env.AUDIT_LOG_TOKEN;
-    if (!auditToken) {
-      warnAuditUnavailable(
-        'missing-token',
-        'Repository transfer audit logs were not queried: set AUDIT_LOG_TOKEN with organization audit-log read access.',
-      );
-      return { events, complete: false };
-    }
-
-    const repositoryFilters = aliases
-      .filter((name) => name.split('/')[0].toLowerCase() === org.toLowerCase())
-      .map((name) => `repo:"${name}"`)
-      .join(' ');
-    if (!repositoryFilters) return { events, complete };
-
-    for (const action of actions) {
-      let page = 1;
-      while (page <= 20) {
-        const query = new URLSearchParams({
-          phrase: `action:${action} ${repositoryFilters}`,
-          include: 'web',
-          per_page: '100',
-          page: String(page),
-        });
-        const url = `https://api.github.com/orgs/${encodeURIComponent(org)}/audit-log?${query}`;
-        try {
-          await githubAuditLogLimiter.wait();
-          const result = await fetchJSONOnce(url, {
-            ...githubHeaders(),
-            Authorization: `Bearer ${auditToken}`,
-            'X-GitHub-Api-Version': '2022-11-28',
-          });
-          if (!Array.isArray(result)) {
-            throw new Error('Unexpected audit-log response; expected an array');
-          }
-          events.push(...result
-            .map((event) => normalizeTransferEvent(event, repositoryInfo.id, repositoryNames))
-            .filter(Boolean));
-          if (result.length < 100) break;
-          page += 1;
-        } catch (error) {
-          complete = false;
-          warnAuditUnavailable(
-            `${org}-audit-log`,
-            `Could not read organization transfer audit log for ${org}: ${error.message}. Set AUDIT_LOG_TOKEN to an organization-owner token with read:audit_log permission.`,
-          );
-          break;
-        }
-      }
-      if (page > 20) {
-        complete = false;
-        warnAuditUnavailable(
-          `${org}-audit-pagination`,
-          `Transfer audit log for ${org} exceeded 2,000 events; only the first 2,000 were checked.`,
-        );
-      }
-    }
-    return { events, complete };
   }
 
   async function getRepositoryTransferEvents(repositoryInfo) {
@@ -401,69 +329,117 @@ async function getContributions(user, commitCache) {
     const cacheKey = String(repositoryInfo.id || canonicalName.toLowerCase());
     if (transferLookupCache.has(cacheKey)) return transferLookupCache.get(cacheKey);
 
-    const cached = repositoryTransferCache[cacheKey] || { events: [], checkedAt: 0 };
-    if (Date.now() - cached.checkedAt < AUDIT_LOG_CACHE_TTL_MS) {
-      transferLookupCache.set(cacheKey, cached.events || []);
-      return cached.events || [];
-    }
-
+    const cached = repositoryTransferCache[cacheKey] || { events: [], ownerObservations: {} };
     const aliases = getRepositoryAliases(repositoryInfo, canonicalName);
-    const owners = new Map([[currentOwner.toLowerCase(), currentOwner]]);
+    const observations = [];
     for (const alias of aliases) {
-      const owner = alias.split('/')[0];
-      owners.set(owner.toLowerCase(), owner);
-    }
-
-    const foundEvents = [];
-    let complete = true;
-    for (const owner of owners.values()) {
-      let ownerInfo;
+      const requestedOwner = alias.split('/')[0];
       try {
-        ownerInfo = owner.toLowerCase() === currentOwner.toLowerCase()
-          ? repositoryInfo.owner
-          : await getOwnerInfo(owner);
-      } catch (error) {
-        complete = false;
-        warnAuditUnavailable(
-          `${owner}-profile`,
-          `Could not determine whether ${owner} is an organization for audit-log lookup: ${error.message}`,
-        );
-        continue;
-      }
-
-      if (ownerInfo?.type !== 'Organization') {
-        const hasPreviousOwner = owner.toLowerCase() !== currentOwner.toLowerCase();
-        if (ownerInfo?.type === 'User' && hasPreviousOwner) {
-          warnAuditUnavailable(
-            `${owner}-personal-account`,
-            `GitHub does not expose personal-account security logs through the organization audit-log API; transfer history for ${owner} can only come from this repository's cache.`,
+        const info = alias.toLowerCase() === canonicalName.toLowerCase()
+          ? repositoryInfo
+          : await getRepositoryInfo(alias);
+        if (
+          repositoryInfo.id != null
+          && info.id != null
+          && String(repositoryInfo.id) !== String(info.id)
+        ) {
+          warnRedirectLookup(
+            alias + '-repository-id',
+            'Ignoring ' + alias + ': GitHub resolved it to a different repository ID than ' + canonicalName + '.',
           );
+          continue;
         }
-        continue;
+        const fullName = info.full_name || alias;
+        const owner = info.owner?.login || fullName.split('/')[0];
+        const redirected = fullName.toLowerCase() !== alias.toLowerCase();
+        observations.push({ requestedName: alias, requestedOwner, fullName, owner, redirected });
+        if (redirected && requestedOwner.toLowerCase() !== owner.toLowerCase()) {
+          console.log('Repository redirect observed: ' + alias + ' -> ' + fullName);
+        }
+      } catch (error) {
+        warnRedirectLookup(
+          alias + '-lookup',
+          'Could not check repository redirect for ' + alias + ': ' + error.message,
+        );
       }
-
-      const result = await fetchOrganizationTransferEvents(owner, repositoryInfo, aliases);
-      foundEvents.push(...result.events);
-      complete &&= result.complete;
     }
 
-    const merged = new Map();
-    for (const event of [...(cached.events || []), ...foundEvents]) {
-      const key = [
-        event.at,
-        event.fromOwner?.toLowerCase(),
-        event.toOwner?.toLowerCase(),
-        event.repository?.toLowerCase(),
-      ].join('|');
-      merged.set(key, event);
+    const priorObservations = Object.values(cached.ownerObservations || {})
+      .filter((observation) => (
+        observation?.owner && Number.isFinite(Date.parse(observation.observedAt))
+      ))
+      .sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
+    const latestObservation = priorObservations.at(-1);
+    const repositoryName = (repositoryInfo.name || canonicalName.split('/').at(-1)).toLowerCase();
+    const cachedOwners = Object.values(commitCache)
+      .filter((entry) => {
+        if (!entry?.origin) return false;
+        if (
+          repositoryInfo.id != null
+          && entry.repositoryId != null
+          && String(entry.repositoryId) !== String(repositoryInfo.id)
+        ) return false;
+        return entry.repositoryId != null || entry.origin.split('/').at(-1).toLowerCase() === repositoryName;
+      })
+      .map((entry) => ({
+        owner: Object.hasOwn(entry, 'ownerAtCommit')
+          ? entry.ownerAtCommit
+          : entry.owner || entry.origin.split('/')[0],
+        commitDate: entry.commitDate,
+        origin: entry.origin,
+      }))
+      .filter((entry) => entry.owner && entry.owner.toLowerCase() !== currentOwner.toLowerCase())
+      .sort((a, b) => {
+        const aDate = Date.parse(a.commitDate);
+        const bDate = Date.parse(b.commitDate);
+        return (Number.isFinite(aDate) ? aDate : 0) - (Number.isFinite(bDate) ? bDate : 0);
+      });
+    const priorCachedOwner = cachedOwners.at(-1);
+    const previousObservation = latestObservation?.owner.toLowerCase() !== currentOwner.toLowerCase()
+      ? latestObservation
+      : priorCachedOwner
+        ? { owner: priorCachedOwner.owner, observedAt: null, fullName: priorCachedOwner.origin }
+        : latestObservation;
+
+    const redirectObserved = observations.some((observation) => (
+      observation.redirected
+      && observation.requestedOwner.toLowerCase() !== observation.owner.toLowerCase()
+    ));
+    const events = [...(cached.events || [])];
+    const observedAt = new Date().toISOString();
+    if (redirectObserved && previousObservation?.owner.toLowerCase() !== currentOwner.toLowerCase()) {
+      const event = createRedirectTransfer(
+        previousObservation,
+        currentOwner,
+        observedAt,
+        previousObservation.fullName || canonicalName,
+      );
+      if (event) {
+        const alreadyRecorded = events.some((existing) => (
+          existing.fromOwner?.toLowerCase() === event.fromOwner.toLowerCase()
+          && existing.toOwner?.toLowerCase() === event.toOwner.toLowerCase()
+          && (!event.notBefore || existing.notBefore === event.notBefore)
+        ));
+        if (!alreadyRecorded) events.push(event);
+      }
     }
-    const events = [...merged.values()].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+
+    const ownerObservations = { ...(cached.ownerObservations || {}) };
+    for (const observation of observations) {
+      if (!observation.redirected) {
+        ownerObservations[observation.requestedName.toLowerCase()] = {
+          owner: observation.owner,
+          fullName: observation.fullName,
+          observedAt,
+        };
+      }
+    }
     repositoryTransferCache[cacheKey] = {
-      events,
-      checkedAt: complete ? Date.now() : cached.checkedAt || 0,
+      events: events.sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt)),
+      ownerObservations,
     };
-    transferLookupCache.set(cacheKey, events);
-    return events;
+    transferLookupCache.set(cacheKey, repositoryTransferCache[cacheKey].events);
+    return repositoryTransferCache[cacheKey].events;
   }
 
   // Resolve the oldest repository that shares history with `fullName`.
@@ -566,19 +542,19 @@ async function getContributions(user, commitCache) {
 
     const cached = commitCache[sha];
     const commitDate = item.commit?.committer?.date || item.commit?.author?.date || cached?.commitDate;
-    const cachedOwner = cached?.ownerAtCommit || cached?.owner || cached?.origin?.split('/')[0];
+    const hasCachedOwner = cached && Object.hasOwn(cached, 'ownerAtCommit');
+    const cachedOwner = hasCachedOwner
+      ? cached.ownerAtCommit
+      : cached?.owner || cached?.origin?.split('/')[0] || null;
     const cacheIsFresh = Boolean(
       cached?.origin
-      && cachedOwner
       && now - Number(cached.resolvedAt) < ORIGIN_CACHE_TTL_MS,
     );
     let originRepo = cached?.origin;
     let owner = cachedOwner;
-    if (cacheIsFresh) {
-      originRepo = cached.origin;
-    } else {
+    if (!cacheIsFresh) {
       originRepo = await resolveOriginRepo(fullName, sha);
-      owner ||= originRepo.split('/')[0];
+      if (!hasCachedOwner && !cached?.owner) owner = originRepo.split('/')[0];
     }
 
     let repositoryInfo;
@@ -591,21 +567,23 @@ async function getContributions(user, commitCache) {
     if (repositoryInfo?.full_name) {
       const canonicalName = repositoryInfo.full_name;
       const canonicalOwner = repositoryInfo.owner?.login || canonicalName.split('/')[0];
-      const auditEvents = await getRepositoryTransferEvents(repositoryInfo);
+      const redirectEvents = await getRepositoryTransferEvents(repositoryInfo);
       const legacyEvents = legacyOwnerTransfers(
         repositoryOwnerHistory[canonicalName.toLowerCase()] || [],
         canonicalOwner,
         canonicalName,
       );
       owner = getOwnerAtCommit(
-        [...legacyEvents, ...auditEvents],
+        [...legacyEvents, ...redirectEvents],
         commitDate,
         canonicalOwner,
-        cachedOwner || canonicalOwner,
+        cachedOwner,
       );
-      originRepo = owner.toLowerCase() === canonicalOwner.toLowerCase()
-        ? canonicalName
-        : `${owner}/${repositoryInfo.name || canonicalName.split('/').at(-1)}`;
+      originRepo = owner
+        ? owner.toLowerCase() === canonicalOwner.toLowerCase()
+          ? canonicalName
+          : `${owner}/${repositoryInfo.name || canonicalName.split('/').at(-1)}`
+        : canonicalName;
     }
 
     commitCache[sha] = {
@@ -619,6 +597,12 @@ async function getContributions(user, commitCache) {
       firstSeenAt: cached?.firstSeenAt ?? cached?.resolvedAt ?? now,
     };
 
+    if (!owner) {
+      console.warn(
+        `Skipping commit ${sha.slice(0, 8)}: its repository owner at ${commitDate || 'an unknown commit date'} cannot be determined from cached observations.`,
+      );
+      continue;
+    }
     if (owner.toLowerCase() === user.toLowerCase()) continue;
     if (!counts.has(owner)) counts.set(owner, { commits: 0, pullRequests: 0, repositories: new Set() });
     const ownerStats = counts.get(owner);
