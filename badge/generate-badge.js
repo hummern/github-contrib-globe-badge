@@ -31,9 +31,36 @@ function getRepositoryOwner() {
 
 const USER = getRepositoryOwner();
 
-function fetchJSONOnce(url, headers = {}) {
+function fetchJSONOnce(url, headers = {}, redirectCount = 0) {
   return new Promise((resolve, reject) => {
     https.get(url, { headers }, (res) => {
+      const redirectCodes = new Set([301, 302, 303, 307, 308]);
+      if (redirectCodes.has(res.statusCode) && res.headers.location) {
+        if (redirectCount >= 5) {
+          res.resume();
+          reject(new Error(`Too many redirects for GET ${url}`));
+          return;
+        }
+
+        let redirectUrl;
+        try {
+          redirectUrl = new URL(res.headers.location, url);
+        } catch (error) {
+          res.resume();
+          reject(error);
+          return;
+        }
+        if (redirectUrl.origin !== new URL(url).origin) {
+          res.resume();
+          reject(new Error(`Refusing cross-origin redirect for GET ${url}`));
+          return;
+        }
+
+        res.resume();
+        fetchJSONOnce(redirectUrl.toString(), headers, redirectCount + 1).then(resolve, reject);
+        return;
+      }
+
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
@@ -307,7 +334,8 @@ async function getContributions(user, commitCache, repositoryOwnerHistory) {
     }
 
     entries.sort((a, b) => Date.parse(a.through) - Date.parse(b.through));
-    repositoryOwnerHistory[key] = entries;
+    if (entries.length) repositoryOwnerHistory[key] = entries;
+    else delete repositoryOwnerHistory[key];
     ownerHistoryLookup.set(key, entries);
     return entries;
   }
