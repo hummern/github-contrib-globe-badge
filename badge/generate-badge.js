@@ -149,7 +149,7 @@ async function searchPullRequests(query) {
   );
 }
 
-const COMMIT_CACHE_PATH = 'commit-cache.json';
+const COMMIT_CACHE_PATH = `commit-cache-${USER}.json`;
 const REPOSITORY_OWNER_HISTORY_CACHE_KEY = '_repositoryOwnerHistory';
 
 // A cached commit->origin mapping is trusted for this long before being

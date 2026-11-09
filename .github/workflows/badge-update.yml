@@ -34,5 +34,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "Update cobe profile badge data"
-          file_pattern: 'badge.gif data.json commit-cache.json index.html README.md'
+          file_pattern: 'badge.gif data.json commit-cache-*.json index.html README.md'
           branch: main
