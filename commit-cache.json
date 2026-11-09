@@ -1830,8 +1830,8 @@
     "firstSeenAt": 1793244795969
   },
   "512e008af63cc380bf8ab94413ef4d27988a7345": {
-    "origin": "cheaper-inference/OmniRoute",
-    "owner": "cheaper-inference",
+    "origin": "diegosouzapw/OmniRoute",
+    "owner": "diegosouzapw",
     "resolvedAt": 1793331388212,
     "firstSeenAt": 1793331388212
   },
@@ -2050,5 +2050,14 @@
     "owner": "turbolego",
     "resolvedAt": 1794209108514,
     "firstSeenAt": 1794209108514
+  },
+  "_repositoryOwnerHistory": {
+    "cheaper-inference/omniroute": [
+      {
+        "owner": "diegosouzapw",
+        "repository": "diegosouzapw/OmniRoute",
+        "through": "2026-10-30T03:36:28.212Z"
+      }
+    ]
   }
 }
