@@ -8,12 +8,14 @@ permissions:
 jobs:
   build-badge:
     runs-on: ubuntu-latest
+    env:
+      COMMIT_CACHE_PATH: commit-cache-${{ github.repository_owner }}.json
     steps:
       - uses: actions/checkout@v7
       - name: Restore commit cache
         uses: actions/cache/restore@v6
         with:
-          path: commit-cache-${{ github.repository_owner }}.json
+          path: ${{ env.COMMIT_CACHE_PATH }}
           key: ${{ runner.os }}-commit-cache-v2-${{ github.repository_owner }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-commit-cache-v2-${{ github.repository_owner }}-
@@ -33,10 +35,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: node badge/generate-badge.js
       - name: Save commit cache
-        if: always() && hashFiles('commit-cache-${{ github.repository_owner }}.json') != ''
+        if: always() && hashFiles(env.COMMIT_CACHE_PATH) != ''
         uses: actions/cache/save@v6
         with:
-          path: commit-cache-${{ github.repository_owner }}.json
+          path: ${{ env.COMMIT_CACHE_PATH }}
           key: ${{ runner.os }}-commit-cache-v2-${{ github.repository_owner }}-${{ github.run_id }}
       - name: Replace turbolego with repository owner
         env:
