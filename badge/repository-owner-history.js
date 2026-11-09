@@ -33,6 +33,78 @@ export function selectPreviousOwnerObservation(latestObservation, cachedOwner, c
   return latestObservation || null;
 }
 
+export function mergeRepositoryHistoryCache(targetCache, sourceCache) {
+  const targetOwnerHistory = targetCache._repositoryOwnerHistory ||= {};
+  const sourceOwnerHistory = sourceCache?._repositoryOwnerHistory || {};
+
+  for (const [repository, entries] of Object.entries(sourceOwnerHistory)) {
+    if (!Array.isArray(entries)) continue;
+    const merged = new Map();
+    for (const entry of [
+      ...(Array.isArray(targetOwnerHistory[repository]) ? targetOwnerHistory[repository] : []),
+      ...entries,
+    ]) {
+      if (!entry?.owner || !entry?.through) continue;
+      const key = [
+        entry.owner.toLowerCase(),
+        (entry.repository || '').toLowerCase(),
+        entry.through,
+      ].join('|');
+      merged.set(key, { ...entry });
+    }
+    targetOwnerHistory[repository] = [...merged.values()]
+      .sort((a, b) => Date.parse(a.through) - Date.parse(b.through));
+  }
+
+  const targetTransferHistory = targetCache._repositoryRedirectHistory ||= {};
+  const sourceTransferHistory = sourceCache?._repositoryRedirectHistory || {};
+  for (const [repositoryId, sourceRecord] of Object.entries(sourceTransferHistory)) {
+    if (!sourceRecord || typeof sourceRecord !== 'object') continue;
+    const targetRecord = targetTransferHistory[repositoryId] || {};
+    const eventsByTransition = new Map();
+    for (const event of [
+      ...(Array.isArray(targetRecord.events) ? targetRecord.events : []),
+      ...(Array.isArray(sourceRecord.events) ? sourceRecord.events : []),
+    ]) {
+      if (!event?.fromOwner || !event?.toOwner) continue;
+      const key = [
+        event.fromOwner.toLowerCase(),
+        event.toOwner.toLowerCase(),
+        event.notBefore || '',
+      ].join('|');
+      const existing = eventsByTransition.get(key);
+      const observedAt = Date.parse(event.observedAt || event.at);
+      const existingObservedAt = Date.parse(existing?.observedAt || existing?.at);
+      if (
+        !existing
+        || (Number.isFinite(observedAt) && (
+          !Number.isFinite(existingObservedAt) || observedAt < existingObservedAt
+        ))
+      ) eventsByTransition.set(key, { ...event });
+    }
+
+    const ownerObservations = { ...(targetRecord.ownerObservations || {}) };
+    for (const [name, observation] of Object.entries(sourceRecord.ownerObservations || {})) {
+      if (!observation?.owner) continue;
+      const existing = ownerObservations[name];
+      const observedAt = Date.parse(observation.observedAt);
+      const existingObservedAt = Date.parse(existing?.observedAt);
+      if (
+        !existing
+        || (Number.isFinite(observedAt) && (
+          !Number.isFinite(existingObservedAt) || observedAt > existingObservedAt
+        ))
+      ) ownerObservations[name] = { ...observation };
+    }
+
+    targetTransferHistory[repositoryId] = {
+      ...targetRecord,
+      events: [...eventsByTransition.values()],
+      ownerObservations,
+    };
+  }
+}
+
 export function legacyOwnerTransfers(entries, currentOwner, repository) {
   const sortedEntries = [...entries]
     .filter((entry) => entry?.owner && Number.isFinite(Date.parse(entry.through)))

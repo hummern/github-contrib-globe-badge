@@ -8,6 +8,7 @@ import {
   createRedirectTransfer,
   getOwnerAtCommit,
   legacyOwnerTransfers,
+  mergeRepositoryHistoryCache,
   selectPreviousOwnerObservation,
 } from './repository-owner-history.js';
 
@@ -454,6 +455,52 @@ async function getContributions(user, commitCache) {
     transferLookupCache.set(cacheKey, repositoryTransferCache[cacheKey].events);
     return repositoryTransferCache[cacheKey].events;
   }
+
+  async function seedTransferHistoryFromParent() {
+    const currentRepository = process.env.GITHUB_REPOSITORY;
+    if (!currentRepository) return;
+
+    let currentRepositoryInfo;
+    try {
+      currentRepositoryInfo = await getRepositoryInfo(currentRepository);
+    } catch (error) {
+      warnRedirectLookup(
+        'current-repository',
+        `Could not inspect ${currentRepository} for a source repository cache: ${error.message}`,
+      );
+      return;
+    }
+
+    const sourceRepository = currentRepositoryInfo.source?.full_name;
+    if (!currentRepositoryInfo.fork || !sourceRepository) return;
+
+    const sourceOwner = sourceRepository.split('/')[0];
+    const sourceCachePath = `commit-cache-${sourceOwner}.json`;
+    if (sourceCachePath === COMMIT_CACHE_PATH) return;
+
+    let sourceCache;
+    try {
+      sourceCache = JSON.parse(fs.readFileSync(sourceCachePath, 'utf8'));
+      if (!sourceCache || typeof sourceCache !== 'object' || Array.isArray(sourceCache)) {
+        throw new Error(`Expected ${sourceCachePath} to contain a JSON object`);
+      }
+    } catch (error) {
+      warnRedirectLookup(
+        `${sourceRepository}-cache`,
+        `Could not seed transfer history from ${sourceCachePath}: ${error.message}`,
+      );
+      return;
+    }
+
+    const hasHistory = Object.keys(sourceCache[REPOSITORY_OWNER_HISTORY_CACHE_KEY] || {}).length > 0
+      || Object.keys(sourceCache[REPOSITORY_TRANSFER_CACHE_KEY] || {}).length > 0;
+    if (!hasHistory) return;
+
+    mergeRepositoryHistoryCache(commitCache, sourceCache);
+    console.log(`Seeded transfer history from source cache ${sourceCachePath}`);
+  }
+
+  await seedTransferHistoryFromParent();
 
   // Resolve the oldest repository that shares history with `fullName`.
   // A repo duplicating another repo's commits (same SHAs) is treated as a
