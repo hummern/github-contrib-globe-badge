@@ -3219,7 +3219,7 @@
         "turbodevsas/eegbliss": {
           "owner": "TurboDevsAS",
           "fullName": "TurboDevsAS/EEGBliss",
-          "observedAt": "2026-11-09T10:16:50.890Z"
+          "observedAt": "2026-11-09T10:21:18.216Z"
         }
       }
     },
@@ -3229,7 +3229,7 @@
         "turbodevsas/blissbrain_timecrisis_prototype_spillexpo": {
           "owner": "TurboDevsAS",
           "fullName": "TurboDevsAS/BlissBrain_TimeCrisis_Prototype_SpillExpo",
-          "observedAt": "2026-11-09T10:16:51.144Z"
+          "observedAt": "2026-11-09T10:21:18.505Z"
         }
       }
     },
@@ -3239,7 +3239,7 @@
         "dequelabs/axe-core": {
           "owner": "dequelabs",
           "fullName": "dequelabs/axe-core",
-          "observedAt": "2026-11-09T10:16:56.096Z"
+          "observedAt": "2026-11-09T10:21:23.321Z"
         }
       }
     },
@@ -3249,7 +3249,7 @@
         "tvibitnmkt/whaleguruvr": {
           "owner": "tvibitnmkt",
           "fullName": "tvibitnmkt/WhaleGuruVR",
-          "observedAt": "2026-11-09T10:16:50.346Z"
+          "observedAt": "2026-11-09T10:21:17.723Z"
         }
       }
     },
@@ -3259,7 +3259,7 @@
         "badges/awesome-badges": {
           "owner": "badges",
           "fullName": "badges/awesome-badges",
-          "observedAt": "2026-11-09T10:16:55.331Z"
+          "observedAt": "2026-11-09T10:21:22.571Z"
         }
       }
     },
@@ -3269,7 +3269,7 @@
         "ashkulz/committers.top": {
           "owner": "ashkulz",
           "fullName": "ashkulz/committers.top",
-          "observedAt": "2026-11-09T10:16:52.401Z"
+          "observedAt": "2026-11-09T10:21:19.853Z"
         }
       }
     },
@@ -3279,7 +3279,7 @@
         "experis/.github": {
           "owner": "Experis",
           "fullName": "Experis/.github",
-          "observedAt": "2026-11-09T10:16:52.157Z"
+          "observedAt": "2026-11-09T10:21:19.600Z"
         }
       }
     },
@@ -3289,7 +3289,7 @@
         "lhrun/bubble": {
           "owner": "LHRUN",
           "fullName": "LHRUN/bubble",
-          "observedAt": "2026-11-09T10:16:55.796Z"
+          "observedAt": "2026-11-09T10:21:23.073Z"
         }
       }
     },
@@ -3299,7 +3299,7 @@
         "qualweb/qualweb": {
           "owner": "qualweb",
           "fullName": "qualweb/qualweb",
-          "observedAt": "2026-11-09T10:16:53.294Z"
+          "observedAt": "2026-11-09T10:21:20.714Z"
         }
       }
     },
@@ -3309,7 +3309,7 @@
         "progrium/authsite": {
           "owner": "progrium",
           "fullName": "progrium/authsite",
-          "observedAt": "2026-11-09T10:16:50.618Z"
+          "observedAt": "2026-11-09T10:21:17.993Z"
         }
       }
     },
@@ -3319,7 +3319,7 @@
         "andersrodem/konsulent-karma": {
           "owner": "andersrodem",
           "fullName": "andersrodem/konsulent-karma",
-          "observedAt": "2026-11-09T10:16:51.654Z"
+          "observedAt": "2026-11-09T10:21:19.032Z"
         }
       }
     },
@@ -3329,7 +3329,7 @@
         "elektroforeningen/arendalsuka-multicam-stream": {
           "owner": "Elektroforeningen",
           "fullName": "Elektroforeningen/Arendalsuka-Multicam-Stream",
-          "observedAt": "2026-11-09T10:16:51.400Z"
+          "observedAt": "2026-11-09T10:21:18.788Z"
         }
       }
     },
@@ -3339,7 +3339,7 @@
         "turbodevsas/.github": {
           "owner": "TurboDevsAS",
           "fullName": "TurboDevsAS/.github",
-          "observedAt": "2026-11-09T10:16:51.932Z"
+          "observedAt": "2026-11-09T10:21:19.292Z"
         }
       }
     },
@@ -3349,7 +3349,7 @@
         "ggml-org/llama.vscode": {
           "owner": "ggml-org",
           "fullName": "ggml-org/llama.vscode",
-          "observedAt": "2026-11-09T10:16:53.765Z"
+          "observedAt": "2026-11-09T10:21:21.172Z"
         }
       }
     },
@@ -3359,17 +3359,26 @@
         "gulbilbot/gul-bil-bluesky": {
           "owner": "GULBILBOT",
           "fullName": "GULBILBOT/gul-bil-bluesky",
-          "observedAt": "2026-11-09T10:16:52.729Z"
+          "observedAt": "2026-11-09T10:21:20.174Z"
         }
       }
     },
     "1157102282": {
-      "events": [],
+      "events": [
+        {
+          "fromOwner": "diegosouzapw",
+          "toOwner": "cheaper-inference",
+          "notBefore": "2026-10-29T07:55:07.000-03:00",
+          "observedAt": "2026-11-09T10:21:21.631Z",
+          "repository": "diegosouzapw/OmniRoute",
+          "source": "redirect"
+        }
+      ],
       "ownerObservations": {
         "cheaper-inference/omniroute": {
           "owner": "cheaper-inference",
           "fullName": "cheaper-inference/OmniRoute",
-          "observedAt": "2026-11-09T10:16:54.262Z"
+          "observedAt": "2026-11-09T10:21:21.631Z"
         }
       }
     },
@@ -3379,7 +3388,7 @@
         "rightnow-ai/openfang": {
           "owner": "RightNow-AI",
           "fullName": "RightNow-AI/openfang",
-          "observedAt": "2026-11-09T10:16:53.008Z"
+          "observedAt": "2026-11-09T10:21:20.455Z"
         }
       }
     },
@@ -3389,7 +3398,7 @@
         "0xzapata/omniroute": {
           "owner": "0xzapata",
           "fullName": "0xzapata/omniroute",
-          "observedAt": "2026-11-09T10:16:54.517Z"
+          "observedAt": "2026-11-09T10:21:21.839Z"
         }
       }
     },
@@ -3399,7 +3408,7 @@
         "kyzdes/fang-upgrade": {
           "owner": "kyzdes",
           "fullName": "kyzdes/fang-upgrade",
-          "observedAt": "2026-11-09T10:16:53.530Z"
+          "observedAt": "2026-11-09T10:21:20.947Z"
         }
       }
     },
@@ -3409,7 +3418,7 @@
         "criger/agentic-ground-rules": {
           "owner": "criger",
           "fullName": "criger/Agentic-Ground-Rules",
-          "observedAt": "2026-11-09T10:16:55.578Z"
+          "observedAt": "2026-11-09T10:21:22.819Z"
         }
       }
     },
@@ -3419,7 +3428,7 @@
         "turbolego/github-contrib-globe-badge": {
           "owner": "turbolego",
           "fullName": "turbolego/github-contrib-globe-badge",
-          "observedAt": "2026-11-09T10:16:54.829Z"
+          "observedAt": "2026-11-09T10:21:22.115Z"
         }
       }
     },
@@ -3429,7 +3438,7 @@
         "slowduplo/eliaden-hallkart": {
           "owner": "SlowDuplo",
           "fullName": "SlowDuplo/Eliaden-Hallkart",
-          "observedAt": "2026-11-09T10:16:55.053Z"
+          "observedAt": "2026-11-09T10:21:22.309Z"
         }
       }
     }
