@@ -14,7 +14,6 @@ const RADIUS = 238;
 const FRAMES = 120;
 const FRAME_DELAY = 100; // ms — 120 frames × 100ms = 12s per rotation (50% slower)
 const WORLD_GEOJSON_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
-const REPOSITORY_OWNER_HISTORY_PATH = 'repository-owner-history.json';
 
 function getRepositoryOwner() {
   if (process.env.GITHUB_REPOSITORY) {
@@ -151,9 +150,7 @@ async function searchPullRequests(query) {
 }
 
 const COMMIT_CACHE_PATH = 'commit-cache.json';
-function loadRepositoryOwnerHistory() {
-  return JSON.parse(fs.readFileSync(REPOSITORY_OWNER_HISTORY_PATH, 'utf8'));
-}
+const REPOSITORY_OWNER_HISTORY_CACHE_KEY = '_repositoryOwnerHistory';
 
 // A cached commit->origin mapping is trusted for this long before being
 // re-resolved, since a repository that is private today (and thus invisible
@@ -270,7 +267,8 @@ function isCoAuthoredBy(message, { login, id, email }) {
   return false;
 }
 
-async function getContributions(user, commitCache, repositoryOwnerHistory) {
+async function getContributions(user, commitCache) {
+  const repositoryOwnerHistory = commitCache[REPOSITORY_OWNER_HISTORY_CACHE_KEY] ||= {};
   // Cache for repository metadata (repos API — 5000 req/hour limit).
   // Failures are NOT cached, so a transient error can be retried on a later
   // reference to the same repo instead of permanently poisoning the result.
@@ -842,16 +840,10 @@ async function main() {
     data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
   } else {
     const commitCache = loadCommitCache();
-    const repositoryOwnerHistory = loadRepositoryOwnerHistory();
-    const { counts, totalCommits, totalPullRequests } = await getContributions(
-      USER,
-      commitCache,
-      repositoryOwnerHistory,
-    );
+    const { counts, totalCommits, totalPullRequests } = await getContributions(USER, commitCache);
     // Persist right away so already-resolved commits are saved even if a
     // later step (geocoding, GIF rendering) fails on this run.
     fs.writeFileSync(COMMIT_CACHE_PATH, JSON.stringify(commitCache, null, 2));
-    fs.writeFileSync(REPOSITORY_OWNER_HISTORY_PATH, JSON.stringify(repositoryOwnerHistory, null, 2));
     const rankedOwners = [...counts.entries()].sort((a, b) => b[1].commits - a[1].commits);
     console.log(`Found ${totalCommits} commits and ${totalPullRequests} merged PRs across ${counts.size} owners`);
     // Walk the full ranking (not just the top 8) so an owner with no usable
