@@ -4,6 +4,7 @@ import { createCanvas, loadImage } from 'canvas';
 import GIFEncoder from 'gif-encoder-2';
 import { execSync } from 'child_process';
 import { groupMarkersByCountry } from './group-markers.js';
+import { firstCurrentOwnerSeenAt, getHistoricalOwner } from './repository-owner-history.js';
 
 const SIZE = 520;
 const INTERNAL_SIZE = SIZE * 2;
@@ -13,6 +14,7 @@ const RADIUS = 238;
 const FRAMES = 120;
 const FRAME_DELAY = 100; // ms — 120 frames × 100ms = 12s per rotation (50% slower)
 const WORLD_GEOJSON_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
+const REPOSITORY_OWNER_HISTORY_PATH = 'repository-owner-history.json';
 
 function getRepositoryOwner() {
   if (process.env.GITHUB_REPOSITORY) {
@@ -122,6 +124,10 @@ async function searchPullRequests(query) {
 }
 
 const COMMIT_CACHE_PATH = 'commit-cache.json';
+function loadRepositoryOwnerHistory() {
+  return JSON.parse(fs.readFileSync(REPOSITORY_OWNER_HISTORY_PATH, 'utf8'));
+}
+
 // A cached commit->origin mapping is trusted for this long before being
 // re-resolved, since a repository that is private today (and thus invisible
 // to the search API) can turn public later and turn out to be the true,
@@ -237,7 +243,7 @@ function isCoAuthoredBy(message, { login, id, email }) {
   return false;
 }
 
-async function getContributions(user, commitCache) {
+async function getContributions(user, commitCache, repositoryOwnerHistory) {
   // Cache for repository metadata (repos API — 5000 req/hour limit).
   // Failures are NOT cached, so a transient error can be retried on a later
   // reference to the same repo instead of permanently poisoning the result.
@@ -247,6 +253,63 @@ async function getContributions(user, commitCache) {
     const repo = await fetchJSON(`https://api.github.com/repos/${fullName}`, githubHeaders());
     repoCache.set(fullName, repo);
     return repo;
+  }
+
+  const ownerHistoryLookup = new Map();
+  async function getRepositoryOwnerHistory(fullName, repositoryInfo) {
+    const canonicalName = repositoryInfo.full_name || fullName;
+    const key = canonicalName.toLowerCase();
+    if (ownerHistoryLookup.has(key)) return ownerHistoryLookup.get(key);
+
+    const currentOwner = repositoryInfo.owner?.login || canonicalName.split('/')[0];
+    const repositoryName = canonicalName.split('/').at(-1).toLowerCase();
+    const sources = new Map();
+    for (const entry of Object.values(commitCache)) {
+      if (!entry?.origin || entry.origin.split('/').at(-1).toLowerCase() !== repositoryName) continue;
+      const owner = entry.owner || entry.origin.split('/')[0];
+      if (owner.toLowerCase() === currentOwner.toLowerCase()) continue;
+      sources.set(`${owner.toLowerCase()}/${entry.origin.toLowerCase()}`, {
+        owner,
+        repository: entry.origin,
+      });
+    }
+
+    const entries = repositoryOwnerHistory[key] || [];
+    for (const source of sources.values()) {
+      if (entries.some((entry) => (
+        entry.owner.toLowerCase() === source.owner.toLowerCase()
+        && entry.repository.toLowerCase() === source.repository.toLowerCase()
+      ))) continue;
+
+      try {
+        const sourceInfo = await getRepositoryInfo(source.repository);
+        if (
+          sourceInfo.full_name?.toLowerCase() !== key
+          || sourceInfo.owner?.login?.toLowerCase() === source.owner.toLowerCase()
+        ) continue;
+
+        // GitHub doesn't expose transfer timestamps; use the earliest cached observation of the current owner.
+        const through = firstCurrentOwnerSeenAt(
+          commitCache,
+          canonicalName,
+          currentOwner,
+          Date.now(),
+        );
+        entries.push({
+          owner: source.owner,
+          repository: source.repository,
+          through: new Date(through).toISOString(),
+        });
+        console.log(`Recorded historical owner ${source.owner} for ${canonicalName}`);
+      } catch (error) {
+        console.warn(`Could not check historical repository ${source.repository}: ${error.message}`);
+      }
+    }
+
+    entries.sort((a, b) => Date.parse(a.through) - Date.parse(b.through));
+    repositoryOwnerHistory[key] = entries;
+    ownerHistoryLookup.set(key, entries);
+    return entries;
   }
 
   async function getTransferredOwner(cached, resolvedOrigin) {
@@ -365,19 +428,51 @@ async function getContributions(user, commitCache) {
     seenShas.add(sha);
 
     const cached = commitCache[sha];
+    const cacheIsFresh = cached && now - cached.resolvedAt < ORIGIN_CACHE_TTL_MS;
     let originRepo;
     let owner;
-    if (cached && now - cached.resolvedAt < ORIGIN_CACHE_TTL_MS) {
+    if (cacheIsFresh) {
       originRepo = cached.origin;
       owner = cached.owner || cached.origin.split('/')[0];
-      if (!cached.owner) commitCache[sha] = { ...cached, owner };
     } else {
       const resolvedOrigin = await resolveOriginRepo(fullName, sha);
       const transferredOwner = cached?.owner || await getTransferredOwner(cached, resolvedOrigin);
       owner = transferredOwner || resolvedOrigin.split('/')[0];
       originRepo = transferredOwner ? cached.origin : resolvedOrigin;
-      commitCache[sha] = { origin: originRepo, owner, resolvedAt: now };
     }
+
+    let repositoryInfo;
+    try {
+      repositoryInfo = await getRepositoryInfo(originRepo);
+    } catch (error) {
+      console.warn(`Could not check repository owner history for ${originRepo}: ${error.message}`);
+    }
+
+    if (repositoryInfo?.full_name) {
+      const canonicalName = repositoryInfo.full_name;
+      await getRepositoryOwnerHistory(canonicalName, repositoryInfo);
+      const commitDate = item.commit?.committer?.date || item.commit?.author?.date;
+      const historicalOwner = getHistoricalOwner(repositoryOwnerHistory, canonicalName, commitDate);
+      const canonicalOwner = repositoryInfo.owner?.login || canonicalName.split('/')[0];
+      if (historicalOwner) {
+        originRepo = historicalOwner.repository;
+        owner = historicalOwner.owner;
+      } else if (
+        canonicalName.toLowerCase() !== originRepo.toLowerCase()
+        && owner.toLowerCase() !== canonicalOwner.toLowerCase()
+      ) {
+        originRepo = canonicalName;
+        owner = canonicalOwner;
+      }
+    }
+
+    commitCache[sha] = {
+      origin: originRepo,
+      owner,
+      resolvedAt: cacheIsFresh ? cached.resolvedAt : now,
+      // Keep the first observation stable while resolvedAt is refreshed.
+      firstSeenAt: cached?.firstSeenAt ?? cached?.resolvedAt ?? now,
+    };
 
     if (owner === user) continue;
     if (!counts.has(owner)) counts.set(owner, { commits: 0, pullRequests: 0, repositories: new Set() });
@@ -719,10 +814,16 @@ async function main() {
     data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
   } else {
     const commitCache = loadCommitCache();
-    const { counts, totalCommits, totalPullRequests } = await getContributions(USER, commitCache);
+    const repositoryOwnerHistory = loadRepositoryOwnerHistory();
+    const { counts, totalCommits, totalPullRequests } = await getContributions(
+      USER,
+      commitCache,
+      repositoryOwnerHistory,
+    );
     // Persist right away so already-resolved commits are saved even if a
     // later step (geocoding, GIF rendering) fails on this run.
     fs.writeFileSync(COMMIT_CACHE_PATH, JSON.stringify(commitCache, null, 2));
+    fs.writeFileSync(REPOSITORY_OWNER_HISTORY_PATH, JSON.stringify(repositoryOwnerHistory, null, 2));
     const rankedOwners = [...counts.entries()].sort((a, b) => b[1].commits - a[1].commits);
     console.log(`Found ${totalCommits} commits and ${totalPullRequests} merged PRs across ${counts.size} owners`);
     // Walk the full ranking (not just the top 8) so an owner with no usable

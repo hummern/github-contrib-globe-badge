@@ -37,6 +37,8 @@ The outer link opens the interactive GitHub Pages globe in a new browser tab whe
 .
 ├─ index.html                         # interactive Cobe globe served by GitHub Pages
 ├─ data.json                          # generated contribution data consumed by index.html
+├─ commit-cache.json                  # generated per-commit attribution cache
+├─ repository-owner-history.json      # generated owner history shared with forks
 ├─ badge.gif                          # generated animated profile badge
 ├─ badge/generate-badge.js            # badge and analytics-data generator
 └─ .github/workflows/badge-update.yml # daily generation and commit workflow
@@ -54,7 +56,7 @@ npm install
 GITHUB_ACTOR=<YOUR_USERNAME> node badge/generate-badge.js
 ```
 
-The generator writes both `badge.gif` and `data.json`. In the GitHub Actions workflow, `GITHUB_ACTOR` is automatically set to `${{ github.repository_owner }}` (the fork owner), so no manual configuration is required. To update the committed badge and country codes from the existing `data.json` without querying GitHub again, run `node badge/generate-badge.js --render-only`.
+The generator writes `badge.gif`, `data.json`, and attribution caches. The repository-owner history cache lets forks apply previously recorded ownership changes to their own matching commits, including commits not present in the per-commit cache. GitHub only exposes the current repository owner, so the historical range ends at the earliest cached observation of the current owner. In the GitHub Actions workflow, `GITHUB_ACTOR` is automatically set to `${{ github.repository_owner }}` (the fork owner), so no manual configuration is required. To update the committed badge and country codes from the existing `data.json` without querying GitHub again, run `node badge/generate-badge.js --render-only`.
 
 GitHub Pages is configured to serve the repository's `main` branch root at:
 
