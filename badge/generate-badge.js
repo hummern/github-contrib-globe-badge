@@ -126,6 +126,8 @@ const COMMIT_CACHE_PATH = 'commit-cache.json';
 // re-resolved, since a repository that is private today (and thus invisible
 // to the search API) can turn public later and turn out to be the true,
 // older origin of a commit we already attributed elsewhere.
+// The cached owner is retained across re-resolution so transfers don't change
+// the location used for commits attributed before the transfer.
 const ORIGIN_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 function loadCommitCache() {
@@ -247,6 +249,23 @@ async function getContributions(user, commitCache) {
     return repo;
   }
 
+  async function getTransferredOwner(cached, resolvedOrigin) {
+    if (!cached?.origin) return null;
+    const previousOwner = cached.owner || cached.origin.split('/')[0];
+    if (previousOwner.toLowerCase() === resolvedOrigin.split('/')[0].toLowerCase()) return null;
+
+    // GitHub redirects the old repository URL to its new owner after a transfer.
+    try {
+      const previousRepo = await getRepositoryInfo(cached.origin);
+      if (previousRepo?.full_name?.toLowerCase() === resolvedOrigin.toLowerCase()) {
+        return previousOwner;
+      }
+    } catch (error) {
+      console.warn(`Could not check previous repository ${cached.origin}: ${error.message}`);
+    }
+    return null;
+  }
+
   // Resolve the oldest repository that shares history with `fullName`.
   // A repo duplicating another repo's commits (same SHAs) is treated as a
   // copy of the original regardless of whether GitHub marks it as a fork —
@@ -347,14 +366,19 @@ async function getContributions(user, commitCache) {
 
     const cached = commitCache[sha];
     let originRepo;
+    let owner;
     if (cached && now - cached.resolvedAt < ORIGIN_CACHE_TTL_MS) {
       originRepo = cached.origin;
+      owner = cached.owner || cached.origin.split('/')[0];
+      if (!cached.owner) commitCache[sha] = { ...cached, owner };
     } else {
-      originRepo = await resolveOriginRepo(fullName, sha);
-      commitCache[sha] = { origin: originRepo, resolvedAt: now };
+      const resolvedOrigin = await resolveOriginRepo(fullName, sha);
+      const transferredOwner = cached?.owner || await getTransferredOwner(cached, resolvedOrigin);
+      owner = transferredOwner || resolvedOrigin.split('/')[0];
+      originRepo = transferredOwner ? cached.origin : resolvedOrigin;
+      commitCache[sha] = { origin: originRepo, owner, resolvedAt: now };
     }
 
-    const owner = originRepo.split('/')[0];
     if (owner === user) continue;
     if (!counts.has(owner)) counts.set(owner, { commits: 0, pullRequests: 0, repositories: new Set() });
     const ownerStats = counts.get(owner);
