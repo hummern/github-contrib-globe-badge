@@ -145,7 +145,7 @@
         "intersectmbo/govtool-proposal-pillar": {
           "owner": "IntersectMBO",
           "fullName": "IntersectMBO/govtool-proposal-pillar",
-          "observedAt": "2026-11-19T05:00:37.776Z"
+          "observedAt": "2026-11-20T04:52:04.985Z"
         }
       }
     },
@@ -165,7 +165,7 @@
         "turbolego/guessthesongyear": {
           "owner": "turbolego",
           "fullName": "turbolego/GuessTheSongYear",
-          "observedAt": "2026-11-19T05:00:38.892Z"
+          "observedAt": "2026-11-20T04:52:06.691Z"
         }
       }
     },
@@ -175,7 +175,7 @@
         "gulbilbot/gul-bil-bluesky": {
           "owner": "GULBILBOT",
           "fullName": "GULBILBOT/gul-bil-bluesky",
-          "observedAt": "2026-11-19T05:00:41.519Z"
+          "observedAt": "2026-11-20T04:52:09.378Z"
         }
       }
     },
@@ -185,7 +185,7 @@
         "turbolego/uustreak": {
           "owner": "turbolego",
           "fullName": "turbolego/uustreak",
-          "observedAt": "2026-11-19T05:00:40.058Z"
+          "observedAt": "2026-11-20T04:52:07.920Z"
         }
       }
     },
@@ -212,7 +212,7 @@
         "cheaper-inference/omniroute": {
           "owner": "cheaper-inference",
           "fullName": "cheaper-inference/OmniRoute",
-          "observedAt": "2026-11-19T05:00:37.567Z"
+          "observedAt": "2026-11-20T04:52:04.736Z"
         }
       }
     },
@@ -232,7 +232,7 @@
         "turbolego/tilgjengelighet-wms-openlayers": {
           "owner": "turbolego",
           "fullName": "turbolego/Tilgjengelighet-WMS-OpenLayers",
-          "observedAt": "2026-11-19T05:00:41.009Z"
+          "observedAt": "2026-11-20T04:52:08.900Z"
         }
       }
     },
@@ -242,7 +242,7 @@
         "turbolego/hololenssatelliteviewer": {
           "owner": "turbolego",
           "fullName": "turbolego/HololensSatelliteViewer",
-          "observedAt": "2026-11-19T05:00:41.771Z"
+          "observedAt": "2026-11-20T04:52:09.625Z"
         }
       }
     },
@@ -262,7 +262,17 @@
         "ikalus1988/misakanet": {
           "owner": "Ikalus1988",
           "fullName": "Ikalus1988/MisakaNet",
-          "observedAt": "2026-11-19T05:00:39.129Z"
+          "observedAt": "2026-11-20T04:52:06.904Z"
+        }
+      }
+    },
+    "1225236969": {
+      "events": [],
+      "ownerObservations": {
+        "turbolego/ai-wcag-gauntlet": {
+          "owner": "turbolego",
+          "fullName": "turbolego/AI-WCAG-Gauntlet",
+          "observedAt": "2026-11-20T04:52:06.486Z"
         }
       }
     },
@@ -272,7 +282,7 @@
         "hazyshades/sendly-test-repo": {
           "owner": "Hazyshades",
           "fullName": "Hazyshades/Sendly-Test-Repo",
-          "observedAt": "2026-11-19T05:00:37.091Z"
+          "observedAt": "2026-11-20T04:52:04.257Z"
         }
       }
     },
@@ -282,7 +292,7 @@
         "turbolego/rullut": {
           "owner": "turbolego",
           "fullName": "turbolego/RullUt",
-          "observedAt": "2026-11-19T05:00:39.630Z"
+          "observedAt": "2026-11-20T04:52:07.367Z"
         }
       }
     },
@@ -292,7 +302,7 @@
         "turbolego/hololensgo": {
           "owner": "turbolego",
           "fullName": "turbolego/HololensGo",
-          "observedAt": "2026-11-19T05:00:38.597Z"
+          "observedAt": "2026-11-20T04:52:05.951Z"
         }
       }
     },
@@ -302,7 +312,7 @@
         "turbolego/wcag-skill": {
           "owner": "turbolego",
           "fullName": "turbolego/wcag-skill",
-          "observedAt": "2026-11-19T05:00:38.000Z"
+          "observedAt": "2026-11-20T04:52:05.247Z"
         }
       }
     },
@@ -312,7 +322,7 @@
         "turbolego/hololensairplaneviewer": {
           "owner": "turbolego",
           "fullName": "turbolego/HololensAirplaneViewer",
-          "observedAt": "2026-11-19T05:00:38.213Z"
+          "observedAt": "2026-11-20T04:52:05.490Z"
         }
       }
     },
@@ -322,7 +332,7 @@
         "turbolego/hololenshermes": {
           "owner": "turbolego",
           "fullName": "turbolego/HololensHermes",
-          "observedAt": "2026-11-19T05:00:38.400Z"
+          "observedAt": "2026-11-20T04:52:05.697Z"
         }
       }
     },
@@ -332,7 +342,7 @@
         "lilly-protocol/agentlily-runtime": {
           "owner": "Lilly-Protocol",
           "fullName": "Lilly-Protocol/agentlily-runtime",
-          "observedAt": "2026-11-19T05:00:40.757Z"
+          "observedAt": "2026-11-20T04:52:08.657Z"
         }
       }
     },
@@ -352,7 +362,7 @@
         "turbolego/hololensikea": {
           "owner": "turbolego",
           "fullName": "turbolego/HololensIKEA",
-          "observedAt": "2026-11-19T05:00:41.218Z"
+          "observedAt": "2026-11-20T04:52:09.105Z"
         }
       }
     },
@@ -372,7 +382,7 @@
         "turbolego/ipad2spotify": {
           "owner": "turbolego",
           "fullName": "turbolego/iPad2Spotify",
-          "observedAt": "2026-11-19T05:00:40.533Z"
+          "observedAt": "2026-11-20T04:52:08.413Z"
         }
       }
     },
@@ -392,7 +402,7 @@
         "turbolego/kev-wcag": {
           "owner": "turbolego",
           "fullName": "turbolego/kev-wcag",
-          "observedAt": "2026-11-19T05:00:39.856Z"
+          "observedAt": "2026-11-20T04:52:07.692Z"
         }
       }
     },
@@ -412,7 +422,17 @@
         "turbolego/qwen3.5-0.8b-wcag-gauntlet-lora": {
           "owner": "turbolego",
           "fullName": "turbolego/qwen3.5-0.8b-wcag-gauntlet-lora",
-          "observedAt": "2026-11-19T05:00:40.315Z"
+          "observedAt": "2026-11-20T04:52:08.180Z"
+        }
+      }
+    },
+    "1455544672": {
+      "events": [],
+      "ownerObservations": {
+        "turbolego/qwen2.5-coder-7b-wcag-gauntlet-lora": {
+          "owner": "turbolego",
+          "fullName": "turbolego/qwen2.5-coder-7b-wcag-gauntlet-lora",
+          "observedAt": "2026-11-20T04:52:10.091Z"
         }
       }
     },
@@ -422,7 +442,7 @@
         "turbolego/wcag-gauntlet-30b-a3b-gguf-adapter": {
           "owner": "turbolego",
           "fullName": "turbolego/wcag-gauntlet-30b-a3b-gguf-adapter",
-          "observedAt": "2026-11-19T05:00:39.389Z"
+          "observedAt": "2026-11-20T04:52:07.142Z"
         }
       }
     }
@@ -3603,5 +3623,104 @@
     "repositoryId": 1457476781,
     "resolvedAt": 1794714476333,
     "firstSeenAt": 1794714476333
+  },
+  "b86f3e873b1c1ef70cd798652c72456f3bffc02d": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-08-01T14:57:13.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "29ab4c4e87448cb96a2eb894809b69bb6d338acf": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-08-01T13:29:05.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "3bf4b21aa469b4c7dd14ee4d5740dd1809edc49c": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-08-01T10:54:37.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "7e7f16680c7eb309da00fbccb3be5665c1d592ca": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-08-01T10:43:45.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "20ca1e5e23bdbe0cf6e55be1974d613b73c5b0e7": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-08-01T10:13:23.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "9d59f9ddba962049f1d81add2e276ea653f8c3f4": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-08-01T09:39:19.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "8da5238c4ed737038ed02ad35a95b0af796fc51d": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-07-31T15:05:52.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "88b0fc47e05f458f92ad41fc232a61428dcf5ce0": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-07-31T13:04:42.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "5ce0f3cd97b23cf6e0bb40dec2426383d2f038a9": {
+    "origin": "turbolego/AI-WCAG-Gauntlet",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-07-31T13:00:11.000Z",
+    "repositoryId": 1225236969,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "ad4024e1a1aa4124947c5236426871eff73c4fbd": {
+    "origin": "turbolego/qwen2.5-coder-7b-wcag-gauntlet-lora",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-11-13T13:15:25.000Z",
+    "repositoryId": 1455544672,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
+  },
+  "7d3347f6e844067adebdc13bc8b893ca2f1550ba": {
+    "origin": "turbolego/qwen2.5-coder-7b-wcag-gauntlet-lora",
+    "owner": "turbolego",
+    "ownerAtCommit": "turbolego",
+    "commitDate": "2026-11-12T16:59:23.000Z",
+    "repositoryId": 1455544672,
+    "resolvedAt": 1795150318140,
+    "firstSeenAt": 1795150318140
   }
 }

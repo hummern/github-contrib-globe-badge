@@ -1,8 +1,8 @@
 {
   "user": "hummern",
-  "generatedAt": "2026-11-19T05:00:46.384Z",
-  "totalCommits": 353,
-  "totalPullRequests": 51,
+  "generatedAt": "2026-11-20T04:52:15.195Z",
+  "totalCommits": 364,
+  "totalPullRequests": 57,
   "markers": [
     {
       "countryCode": "NO",
@@ -10,12 +10,16 @@
         59.9685301,
         10.4690248
       ],
-      "commits": 330,
-      "pullRequests": 33,
+      "commits": 341,
+      "pullRequests": 39,
       "owners": [
         "turbolego"
       ],
       "repositories": [
+        {
+          "name": "AI-WCAG-Gauntlet",
+          "url": "https://github.com/turbolego/AI-WCAG-Gauntlet"
+        },
         {
           "name": "GuessTheSongYear",
           "url": "https://github.com/turbolego/GuessTheSongYear"
@@ -59,6 +63,10 @@
         {
           "name": "mimik",
           "url": "https://github.com/turbolego/mimik"
+        },
+        {
+          "name": "qwen2.5-coder-7b-wcag-gauntlet-lora",
+          "url": "https://github.com/turbolego/qwen2.5-coder-7b-wcag-gauntlet-lora"
         },
         {
           "name": "qwen3.5-0.8b-wcag-gauntlet-lora",
